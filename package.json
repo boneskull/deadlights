@@ -1,0 +1,27 @@
+{
+  "name": "deadlights",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Christopher Hiller <boneskull@boneskull.com> (https://boneskull.com/)",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "chai-eventemitter": "^1.1.1",
+    "mocha": "^3.2.0",
+    "mock-dgram": "^0.1.2",
+    "semistandard": "^9.2.1",
+    "sinon": "^1.17.6",
+    "sinon-chai": "^2.8.0"
+  },
+  "dependencies": {
+    "internal-ip": "^1.2.0",
+    "lodash": "^4.17.3",
+    "netmask": "^1.0.6"
+  }
+}

@@ -1,3 +1,6 @@
+/* eslint-env mocha */
+/* global expect */
+
 const {Network, DISCOVERY_PORT} = require('../src/network');
 const sinon = require('sinon');
 const MockDgram = require('mock-dgram');

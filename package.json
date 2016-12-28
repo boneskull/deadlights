@@ -1,14 +1,14 @@
 {
   "name": "deadlights",
   "version": "0.0.0",
-  "description": "",
+  "description": "Interface for Flux WiFi RGB light bulbs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "semistandard && mocha --require test/fixture"
   },
   "keywords": [],
   "author": "Christopher Hiller <boneskull@boneskull.com> (https://boneskull.com/)",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
@@ -20,7 +20,6 @@
     "sinon-chai": "^2.8.0"
   },
   "dependencies": {
-    "internal-ip": "^1.2.0",
     "lodash": "^4.17.3",
     "netmask": "^1.0.6"
   }

@@ -20,7 +20,11 @@
     "sinon-chai": "^2.8.0"
   },
   "dependencies": {
+    "binary-parser": "^1.1.5",
+    "bluebird": "^3.4.7",
+    "color-namer": "^1.1.0",
     "lodash": "^4.17.3",
-    "netmask": "^1.0.6"
+    "netmask": "^1.0.6",
+    "rgb-hex": "^2.1.0"
   }
 }

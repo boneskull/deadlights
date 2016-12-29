@@ -5,12 +5,13 @@ const os = require('os');
 const _ = require('lodash');
 const {EventEmitter} = require('events');
 const {Netmask} = require('netmask');
-const {Light} = require('./light');
+const {Bulb} = require('./bulb');
+
 const DISCOVERY_PORT = 48899;
 const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
 
 class Network extends EventEmitter {
-  constructor () {
+  constructor (options = {}) {
     super();
 
     const networkInterface = _(os.networkInterfaces())
@@ -23,7 +24,8 @@ class Network extends EventEmitter {
 
     const block = new Netmask(`${networkInterface.address}/${networkInterface.netmask}`);
 
-    this.lights = new Map();
+    this.bulbs = new Map();
+    this.ipAddress = networkInterface.address;
     this.broadcastAddress = block.broadcast;
 
     this.sock = dgram.createSocket({
@@ -37,6 +39,7 @@ class Network extends EventEmitter {
 
   discover (timeout = 2000) {
     return new Promise(resolve => {
+      // XXX don't do this if already bound
       this.sock.bind(DISCOVERY_PORT, () => {
         this.sock.setBroadcast(true);
         resolve(this.sock);
@@ -55,19 +58,22 @@ class Network extends EventEmitter {
         });
       })
       .then(sock => {
-        const newLights = [];
+        const newBulbs = [];
 
         const onMessage = (msg, rinfo) => {
-          const [ip, id, model] = String(msg).split(',');
-          if (!this.lights.has(id)) {
-            const light = new Light({
-              ip,
-              id,
-              model
-            });
-            this.lights.set(id, light);
-            newLights.push(light);
-            this.emit('light-found', light);
+          // ignore our initial broadcast
+          if (rinfo.address !== this.ipAddress) {
+            const [ip, id, model] = String(msg).split(',');
+            if (!this.bulbs.has(id)) {
+              const bulb = new Bulb({
+                ip,
+                id,
+                model
+              });
+              this.bulbs.set(id, bulb);
+              newBulbs.push(bulb);
+              this.emit('bulb-found', bulb);
+            }
           }
         };
 
@@ -81,7 +87,7 @@ class Network extends EventEmitter {
 
           const t = setTimeout(() => {
             sock.removeListener('message', onMessage);
-            resolve(newLights);
+            resolve(newBulbs);
           }, timeout);
         });
       });
@@ -91,3 +97,14 @@ class Network extends EventEmitter {
 exports.Network = Network;
 exports.DISCOVERY_MESSAGE = DISCOVERY_MESSAGE;
 exports.DISCOVERY_PORT = DISCOVERY_PORT;
+
+if (require.main === module) {
+  const n = new Network();
+  n.discover()
+    .then(bulbs => _.find(bulbs, {id: 'ACCF23801D98'}).queryState())
+    .then(bulb => {
+      console.log(bulb.colorName);
+      console.log(bulb.color);
+      
+    });
+}

@@ -1,6 +1,7 @@
 const colorNamer = require('color-namer');
 const rgbHex = require('rgb-hex');
 
+// this is roughly 2700K
 const WARM_WHITE = [
   255,
   166,

@@ -5,6 +5,7 @@ const {Network, DISCOVERY_PORT} = require('../src/network');
 const sinon = require('sinon');
 const MockDgram = require('mock-dgram');
 const dgram = require('dgram');
+const DISCOVERY_TIMEOUT = 0;
 
 describe('network', function () {
   let sandbox;
@@ -94,7 +95,7 @@ describe('network', function () {
         });
 
         it('should return an Array', function () {
-          return expect(network.discover(100))
+          return expect(network.discover(DISCOVERY_TIMEOUT))
             .to
             .eventually
             .be
@@ -102,7 +103,7 @@ describe('network', function () {
         });
 
         it('should return the found bulbs(s)', function () {
-          return expect(network.discover(100)
+          return expect(network.discover(DISCOVERY_TIMEOUT)
             .then(bulbs => bulbs.pop()))
             .to
             .eventually

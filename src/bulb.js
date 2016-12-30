@@ -21,6 +21,10 @@ class Bulb extends EventEmitter {
     this.createSocket();
   }
 
+  static finalizeCommand (command) {
+    return command.concat(_.sum(command) & 0xff);
+  }
+
   createSocket () {
     this.sock = new Socket()
       .on('error', err => {
@@ -31,12 +35,20 @@ class Bulb extends EventEmitter {
         this.sock.destroy();
         this.createSocket();
       });
+    return this;
   }
 
   sendRequest (message) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      // we can do better than "isObject()"
+      if (!_.isObject(message)) {
+        reject(
+          new Error('message must be an array of unsigned 8-bit integers'));
+        return;
+      }
+      // TODO unsure about error handling here
       let chunks = [];
-      const command = message.command.concat(_.sum(message.command) & 0xff);
+      const command = Bulb.finalizeCommand(message.command);
       const data = Buffer.from(command);
       const onData = data => {
         chunks = chunks.concat(Array.from(data));
@@ -86,8 +98,8 @@ class Bulb extends EventEmitter {
       .then(() => this.sendRequest(message))
       .then(bulbState => {
         this.history.push(bulbState);
-      })
-      .return(this);
+        return this;
+      });
   }
 }
 

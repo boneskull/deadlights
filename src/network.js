@@ -14,6 +14,15 @@ class Network extends EventEmitter {
   constructor (options = {}) {
     super();
 
+    this.bulbs = new Map();
+    this.interfaceInfo = Network.getInterfaceInfo();
+    this.createSocket();
+  }
+
+  static getInterfaceInfo (force = false) {
+    if (Network.interfaceInfo && !force) {
+      return Network.interfaceInfo;
+    }
     const networkInterface = _(os.networkInterfaces())
       .values()
       .flatten()
@@ -21,13 +30,15 @@ class Network extends EventEmitter {
         internal: false,
         family: 'IPv4'
       });
-
     const block = new Netmask(`${networkInterface.address}/${networkInterface.netmask}`);
+    Network.interfaceInfo = {
+      ipAddress: networkInterface.address,
+      broadcastAddress: block.broadcast
+    };
+    return Network.interfaceInfo;
+  }
 
-    this.bulbs = new Map();
-    this.ipAddress = networkInterface.address;
-    this.broadcastAddress = block.broadcast;
-
+  createSocket () {
     this.sock = dgram.createSocket({
       type: 'udp4',
       reuseAddr: true
@@ -47,7 +58,7 @@ class Network extends EventEmitter {
     })
       .then(sock => {
         return new Promise((resolve, reject) => {
-          sock.send(DISCOVERY_MESSAGE, DISCOVERY_PORT, this.broadcastAddress,
+          sock.send(DISCOVERY_MESSAGE, DISCOVERY_PORT, this.interfaceInfo.broadcastAddress,
             err => {
               if (err) {
                 reject(err);
@@ -62,8 +73,9 @@ class Network extends EventEmitter {
 
         const onMessage = (msg, rinfo) => {
           // ignore our initial broadcast
-          if (rinfo.address !== this.ipAddress) {
-            const [ip, id, model] = String(msg).split(',');
+          if (rinfo.address !== this.interfaceInfo.ipAddress) {
+            const [ip, id, model] = String(msg)
+              .split(',');
             if (!this.bulbs.has(id)) {
               const bulb = new Bulb({
                 ip,
@@ -101,10 +113,10 @@ exports.DISCOVERY_PORT = DISCOVERY_PORT;
 if (require.main === module) {
   const n = new Network();
   n.discover()
-    .then(bulbs => _.find(bulbs, {id: 'ACCF23801D98'}).queryState())
+    .then(bulbs => _.find(bulbs, {id: 'ACCF23801D98'})
+      .queryState())
     .then(bulb => {
       console.log(bulb.colorName);
       console.log(bulb.color);
-      
     });
 }

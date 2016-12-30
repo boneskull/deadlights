@@ -23,7 +23,7 @@ class Bulb extends EventEmitter {
   }
 
   get state () {
-    return _.last(this.history);
+    return _.last(this.history) || {};
   }
 
   get mode () {

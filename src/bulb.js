@@ -10,7 +10,7 @@ const Promise = require('bluebird');
 Promise.longStackTraces();
 
 class Bulb extends EventEmitter {
-  constructor ({ip, id, model}) {
+  constructor ({ip, id, model} = {}) {
     super();
 
     this.ip = ip;

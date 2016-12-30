@@ -1,6 +1,6 @@
 'use strict';
 const {Parser} = require('binary-parser');
-const {BulbState} = require('./bulb-state');
+const {BulbState} = require('./bulb/state');
 
 require('bluebird')
   .longStackTraces();

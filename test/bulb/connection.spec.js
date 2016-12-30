@@ -3,9 +3,9 @@
 
 'use strict';
 const Promise = require('bluebird');
-const messages = require('../src/messages');
-const {Bulb, BULB_PORT} = require('../src/bulb');
-const {BulbState} = require('../src/bulb-state');
+const messages = require('../../src/messages');
+const {BulbConnection, BULB_PORT} = require('../../src/bulb/connection');
+const {BulbState} = require('../../src/bulb/state');
 const sinon = require('sinon');
 const Mitm = require('mitm');
 const {Socket} = require('net');
@@ -24,10 +24,10 @@ describe('bulb', function () {
     man.disable();
   });
 
-  describe('class Bulb', function () {
+  describe('class BulbConnection', function () {
     describe('constructor', function () {
       it('should instantiate an object', function () {
-        expect(new Bulb())
+        expect(new BulbConnection())
           .to
           .be
           .an('object');
@@ -35,52 +35,48 @@ describe('bulb', function () {
 
       it('should retain ip, id, and model properties', function () {
         const props = {
-          ip: 'foo',
-          id: 'bar',
-          model: 'baz'
+          ip: 'foo'
         };
-        expect(new Bulb(props))
+        expect(new BulbConnection(props))
           .to
           .include(props);
       });
 
       it('should call Bulb#createSocket()', function () {
-        sandbox.stub(Bulb.prototype, 'createSocket');
-        const bulb = new Bulb();
-        expect(bulb.createSocket).to.have.been.calledOnce;
+        sandbox.stub(BulbConnection.prototype, 'createSocket');
+        const conn = new BulbConnection();
+        expect(conn.createSocket).to.have.been.calledOnce;
       });
     });
 
     describe('method', function () {
-      let bulb;
+      let conn;
 
       beforeEach(function () {
-        bulb = new Bulb({
-          ip: '99.99.99.99',
-          id: 'ASDFGHJKL',
-          model: 'Camry'
+        conn = new BulbConnection({
+          ip: '99.99.99.99'
         });
       });
 
       describe('createSocket()', function () {
         it('should create a net.Socket property "sock"', function () {
-          expect(bulb.createSocket().sock)
+          expect(conn.createSocket().sock)
             .to
             .be
             .an
             .instanceof(Socket);
         });
 
-        it('should return the Bulb instance', function () {
-          expect(bulb.createSocket())
+        it('should return the BulbConnection instance', function () {
+          expect(conn.createSocket())
             .to
-            .equal(bulb);
+            .equal(conn);
         });
 
         it('should listen for event "error" on the Socket', function () {
           sandbox.spy(Socket.prototype, 'on');
-          bulb.createSocket();
-          expect(bulb.sock.on)
+          conn.createSocket();
+          expect(conn.sock.on)
             .to
             .have
             .been
@@ -89,8 +85,8 @@ describe('bulb', function () {
 
         it('should listen for event "timeout" on the Socket', function () {
           sandbox.spy(Socket.prototype, 'on');
-          bulb.createSocket();
-          expect(bulb.sock.on)
+          conn.createSocket();
+          expect(conn.sock.on)
             .to
             .have
             .been
@@ -100,30 +96,30 @@ describe('bulb', function () {
         describe('Socket event', function () {
           describe('"error"', function () {
             beforeEach(function () {
-              bulb.createSocket();
+              conn.createSocket();
             });
 
-            it('should re-emit on the Bulb instance', function () {
+            it('should re-emit on the BulbConnection instance', function () {
               const err = new Error();
-              expect(() => bulb.sock.emit('error', err))
+              expect(() => conn.sock.emit('error', err))
                 .to
-                .emitFrom(bulb, 'error', err);
+                .emitFrom(conn, 'error', err);
             });
           });
 
           describe('"timeout"', function () {
             beforeEach(function () {
-              sandbox.stub(bulb.sock, 'destroy');
-              sandbox.stub(bulb, 'createSocket');
-              bulb.sock.emit('timeout');
+              sandbox.stub(conn.sock, 'destroy');
+              sandbox.stub(conn, 'createSocket');
+              conn.sock.emit('timeout');
             });
 
             it('should destroy the Socket', function () {
-              expect(bulb.sock.destroy).to.have.been.calledOnce;
+              expect(conn.sock.destroy).to.have.been.calledOnce;
             });
 
-            it('should call Bulb#createSocket again', function () {
-              expect(bulb.createSocket).to.have.been.calledOnce;
+            it('should call BulbConnection#createSocket again', function () {
+              expect(conn.createSocket).to.have.been.calledOnce;
             });
           });
         });
@@ -134,30 +130,30 @@ describe('bulb', function () {
 
         beforeEach(function () {
           bulbState = new BulbState();
-          sandbox.stub(bulb, 'sendRequest')
+          sandbox.stub(conn, 'sendRequest')
             .returns(Promise.resolve(bulbState));
-          sandbox.stub(bulb.sock, 'connect')
+          sandbox.stub(conn.sock, 'connect')
             .callsArgAsync(1);
         });
 
-        it('should connect to the Bulb on BULB_PORT', function () {
-          return bulb.queryState()
+        it('should connect to the BulbConnection on BULB_PORT', function () {
+          return conn.queryState()
             .then(() => {
-              expect(bulb.sock.connect)
+              expect(conn.sock.connect)
                 .to
                 .have
                 .been
                 .calledWithExactly({
                   port: BULB_PORT,
-                  host: bulb.ip
+                  host: conn.ip
                 }, sinon.match.func);
             });
         });
 
-        it('should send a "QUERY_STATE" message to the Bulb', function () {
-          return bulb.queryState()
+        it('should send a "QUERY_STATE" message to the BulbConnection', function () {
+          return conn.queryState()
             .then(() => {
-              expect(bulb.sendRequest)
+              expect(conn.sendRequest)
                 .to
                 .have
                 .been
@@ -165,21 +161,21 @@ describe('bulb', function () {
             });
         });
 
-        it('should record the Bulb state in the "history" array prop',
+        it('should record the BulbConnection state in the "history" array prop',
           function () {
-            return bulb.queryState()
+            return conn.queryState()
               .then(() => {
-                expect(bulb.history)
+                expect(conn.history)
                   .to
                   .eql([bulbState]);
               });
           });
 
-        it('should fulfill with the Bulb', function () {
-          return expect(bulb.queryState())
+        it('should fulfill with the BulbConnection', function () {
+          return expect(conn.queryState())
             .to
             .eventually
-            .equal(bulb);
+            .equal(conn);
         });
       });
 
@@ -219,27 +215,27 @@ describe('bulb', function () {
             0x0f,
             0x9d
           ]);
-          sandbox.spy(Bulb, 'finalizeCommand');
-          sandbox.stub(bulb.sock, 'write', () => {
+          sandbox.spy(BulbConnection, 'finalizeCommand');
+          sandbox.stub(conn.sock, 'write', () => {
             process.nextTick(() => {
               // each response is 14 bytes
-              bulb.sock.emit('data', data);
+              conn.sock.emit('data', data);
             });
           });
         });
 
         it('should reject if called without a message', function () {
-          return expect(bulb.sendRequest())
+          return expect(conn.sendRequest())
             .to
             .eventually
             .be
             .rejectedWith(Error, /message must be an array/);
         });
 
-        it('should call Bulb.finalize() on the command', function () {
-          return bulb.sendRequest(message)
+        it('should call BulbConnection.finalize() on the command', function () {
+          return conn.sendRequest(message)
             .then(() => {
-              expect(Bulb.finalizeCommand)
+              expect(BulbConnection.finalizeCommand)
                 .to
                 .have
                 .been
@@ -248,10 +244,10 @@ describe('bulb', function () {
         });
 
         it('should write the finalized command to the Socket', function () {
-          return bulb.sendRequest(message)
+          return conn.sendRequest(message)
             .then(() => {
-              const buf = Buffer.from(Bulb.finalizeCommand(message.command));
-              expect(bulb.sock.write)
+              const buf = Buffer.from(BulbConnection.finalizeCommand(message.command));
+              expect(conn.sock.write)
                 .to
                 .have
                 .been
@@ -260,7 +256,7 @@ describe('bulb', function () {
         });
 
         it('should call the parser with the response data', function () {
-          return bulb.sendRequest(message)
+          return conn.sendRequest(message)
             .then(() => {
               expect(message.parser.parse)
                 .to
@@ -271,7 +267,7 @@ describe('bulb', function () {
         });
 
         it('should fulfill with the result object', function () {
-          return expect(bulb.sendRequest(message))
+          return expect(conn.sendRequest(message))
             .to
             .eventually
             .equal(result);

@@ -1,28 +1,33 @@
 'use strict';
 
+const messages = require('../messages');
 const {EventEmitter} = require('events');
-const _ = require('lodash');
-const {Socket} = require('net');
-const messages = require('./messages');
 const BULB_PORT = 5577;
 const RESPONSE_LENGTH = 14;
 const Promise = require('bluebird');
-Promise.longStackTraces();
+const _ = require('lodash');
+const {Socket} = require('net');
 
-class Bulb extends EventEmitter {
-  constructor ({ip, id, model} = {}) {
+class BulbConnection extends EventEmitter {
+  constructor ({ip} = {}) {
     super();
-
     this.ip = ip;
-    this.id = id;
-    this.model = model;
-
-    this.history = [];
     this.createSocket();
   }
 
   static finalizeCommand (command) {
     return command.concat(_.sum(command) & 0xff);
+  }
+
+  queryState () {
+    const message = messages.QUERY_STATE;
+    return new Promise(resolve => {
+      this.sock.connect({
+        port: BULB_PORT,
+        host: this.ip
+      }, resolve);
+    })
+      .then(() => this.sendRequest(message));
   }
 
   createSocket () {
@@ -48,7 +53,7 @@ class Bulb extends EventEmitter {
       }
       // TODO unsure about error handling here
       let chunks = [];
-      const command = Bulb.finalizeCommand(message.command);
+      const command = BulbConnection.finalizeCommand(message.command);
       const data = Buffer.from(command);
       const onData = data => {
         chunks = chunks.concat(Array.from(data));
@@ -62,46 +67,6 @@ class Bulb extends EventEmitter {
     })
       .then(data => message.parser.parse(data));
   }
-
-  get state () {
-    return _.last(this.history);
-  }
-
-  get mode () {
-    return this.state.mode;
-  }
-
-  get colorName () {
-    return this.state.colorName;
-  }
-
-  get color () {
-    return this.state.color;
-  }
-
-  get isOn () {
-    return this.state.isOn;
-  }
-
-  get speed () {
-    return this.state.speed;
-  }
-
-  queryState () {
-    const message = messages.QUERY_STATE;
-    return new Promise(resolve => {
-      this.sock.connect({
-        port: BULB_PORT,
-        host: this.ip
-      }, resolve);
-    })
-      .then(() => this.sendRequest(message))
-      .then(bulbState => {
-        this.history.push(bulbState);
-        return this;
-      });
-  }
 }
 
-exports.Bulb = Bulb;
-exports.BULB_PORT = BULB_PORT;
+exports.BulbConnection = BulbConnection;

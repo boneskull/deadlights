@@ -18,11 +18,38 @@ describe('network', function () {
   });
 
   describe('class Network', function () {
-    it('should instantiate an object', function () {
-      expect(new Network())
-        .to
-        .be
-        .an('object');
+    describe('constructor', function () {
+      it('should instantiate an object', function () {
+        expect(new Network())
+          .to
+          .be
+          .an('object');
+      });
+
+      it('should call Network.getInterfaceInfo()', function () {
+        sandbox.stub(Network, 'getInterfaceInfo');
+        /* eslint no-new: off */
+        new Network();
+        expect(Network.getInterfaceInfo).to.have.been.calledOnce;
+      });
+
+      it(
+        'should assign the result of Network.getInterfaceInfo() to property "interfaceInfo"',
+        function () {
+          const obj = {};
+          sandbox.stub(Network, 'getInterfaceInfo')
+            .returns(obj);
+          const network = new Network();
+          expect(network.interfaceInfo)
+            .to
+            .equal(obj);
+        });
+
+      it('should call Network#createSocket()', function () {
+        sandbox.stub(Network.prototype, 'createSocket');
+        const network = new Network();
+        expect(network.createSocket).to.have.been.calledOnce;
+      });
     });
 
     describe('when internal socket emits an error', function () {
@@ -74,12 +101,12 @@ describe('network', function () {
             .an('Array');
         });
 
-        it('should return the found light(s)', function () {
+        it('should return the found bulbs(s)', function () {
           return expect(network.discover(100)
-            .then(lights => lights.pop()))
+            .then(bulbs => bulbs.pop()))
             .to
             .eventually
-            .eql({
+            .include({
               id: 'ACCF236726C6',
               model: 'HF-LPB100-ZJ200',
               ip: '10.0.0.18'

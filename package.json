@@ -4,7 +4,7 @@
   "description": "Interface for Flux WiFi RGB light bulbs",
   "main": "index.js",
   "scripts": {
-    "test": "semistandard && mocha --require test/fixture"
+    "test": "semistandard && mocha --require test/fixture 'test/**/*.spec.js'"
   },
   "keywords": [],
   "author": "Christopher Hiller <boneskull@boneskull.com> (https://boneskull.com/)",

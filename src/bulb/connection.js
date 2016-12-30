@@ -70,3 +70,4 @@ class BulbConnection extends EventEmitter {
 }
 
 exports.BulbConnection = BulbConnection;
+exports.BULB_PORT = BULB_PORT;

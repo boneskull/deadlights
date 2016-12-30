@@ -161,21 +161,11 @@ describe('bulb', function () {
             });
         });
 
-        it('should record the BulbConnection state in the "history" array prop',
-          function () {
-            return conn.queryState()
-              .then(() => {
-                expect(conn.history)
-                  .to
-                  .eql([bulbState]);
-              });
-          });
-
-        it('should fulfill with the BulbConnection', function () {
+        it('should fulfill with the bulb state', function () {
           return expect(conn.queryState())
             .to
             .eventually
-            .equal(conn);
+            .equal(bulbState);
         });
       });
 

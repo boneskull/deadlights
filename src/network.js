@@ -6,6 +6,7 @@ const _ = require('lodash');
 const {EventEmitter} = require('events');
 const {Netmask} = require('netmask');
 const {Bulb} = require('./bulb');
+const Promise = require('bluebird');
 
 const DISCOVERY_PORT = 48899;
 const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
@@ -16,7 +17,17 @@ class Network extends EventEmitter {
 
     this.bulbs = new Map();
     this.interfaceInfo = Network.getInterfaceInfo();
-    this.createSocket();
+    this.keepOpen = Boolean(options.keepOpen);
+  }
+
+  close () {
+    return new Promise(resolve => {
+      if (this.sock && this.sock.fd) {
+        this.sock.close(() => resolve(this));
+        return;
+      }
+      resolve(this);
+    });
   }
 
   static getInterfaceInfo (force = false) {
@@ -39,69 +50,85 @@ class Network extends EventEmitter {
   }
 
   createSocket () {
+    // we cannot reuse the address here; it doesn't work.
+    // I don't know why.  if the port's in use, let it throw.
     this.sock = dgram.createSocket({
-      type: 'udp4',
-      reuseAddr: true
+      type: 'udp4'
     })
       .on('error', err => {
         this.emit('error', err);
       });
   }
 
-  discover (timeout = 2000) {
+  bind () {
+    if (!this.sock) {
+      this.createSocket();
+    }
     return new Promise(resolve => {
-      // XXX don't do this if already bound
+      // there has to be a better way?
+      // if fd === null, we aren't bound.
+      if (this.sock.fd) {
+        resolve(this.sock);
+        return;
+      }
       this.sock.bind(DISCOVERY_PORT, () => {
         this.sock.setBroadcast(true);
         resolve(this.sock);
       });
-    })
+    });
+  }
+
+  discover (timeout = 2000) {
+    const newBulbs = [];
+    const onMessage = (msg, rinfo) => {
+      // ignore our initial broadcast
+      if (rinfo.address !== this.interfaceInfo.ipAddress) {
+        const [ip, id, model] = String(msg)
+          .split(',');
+        if (!this.bulbs.has(id)) {
+          const bulb = new Bulb({
+            ip,
+            id,
+            model
+          });
+          this.bulbs.set(id, bulb);
+          newBulbs.push(bulb);
+        }
+      }
+    };
+
+    return this.bind()
       .then(sock => {
         return new Promise((resolve, reject) => {
-          sock.send(DISCOVERY_MESSAGE, DISCOVERY_PORT, this.interfaceInfo.broadcastAddress,
-            err => {
+          let timer;
+          const onError = err => {
+            clearTimeout(timer);
+            reject(err);
+          };
+          sock.removeAllListeners('message');
+          sock.on('message', onMessage);
+          sock.send(DISCOVERY_MESSAGE, DISCOVERY_PORT,
+            this.interfaceInfo.broadcastAddress, err => {
               if (err) {
                 reject(err);
                 return;
               }
-              resolve(sock);
+              this.emit('discovering');
+
+              sock.once('error', onError);
+
+              timer = setTimeout(() => {
+                sock.removeAllListeners('message');
+                sock.removeListener('error', onError);
+                resolve(newBulbs);
+              }, timeout);
             });
         });
       })
-      .then(sock => {
-        const newBulbs = [];
-
-        const onMessage = (msg, rinfo) => {
-          // ignore our initial broadcast
-          if (rinfo.address !== this.interfaceInfo.ipAddress) {
-            const [ip, id, model] = String(msg)
-              .split(',');
-            if (!this.bulbs.has(id)) {
-              const bulb = new Bulb({
-                ip,
-                id,
-                model
-              });
-              this.bulbs.set(id, bulb);
-              newBulbs.push(bulb);
-              this.emit('bulb-found', bulb);
-            }
-          }
-        };
-
-        return new Promise((resolve, reject) => {
-          sock.on('message', onMessage);
-          this.emit('discovering', sock);
-          sock.once('error', err => {
-            clearTimeout(t);
-            reject(err);
-          });
-
-          const t = setTimeout(() => {
-            sock.removeListener('message', onMessage);
-            resolve(newBulbs);
-          }, timeout);
-        });
+      .finally(() => {
+        if (!this.sock.keepOpen) {
+          return this.close();
+        }
       });
   }
 }
@@ -113,10 +140,16 @@ exports.DISCOVERY_PORT = DISCOVERY_PORT;
 if (require.main === module) {
   const n = new Network();
   n.discover()
-    .then(bulbs => _.find(bulbs, {id: 'ACCF23801D98'})
-      .queryState())
+    .then(bulbs => _.find(bulbs, {id: 'ACCF236726C6'})
+      .refresh())
     .then(bulb => {
-      console.log(bulb.colorName);
-      console.log(bulb.color);
+      if (bulb.isOn) {
+        return bulb.switchOff();
+      } else {
+        return bulb.switchOn();
+      }
+    })
+    .then(bulb => {
+      return bulb.forget();
     });
 }

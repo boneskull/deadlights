@@ -48,3 +48,25 @@ exports.QUERY_STATE = {
     .uint8('blue')
     .uint8('white')
 };
+
+exports.SWITCH_ON = {
+  command: [
+    0x71,
+    0x23,
+    0x0f
+  ]
+};
+
+exports.SWITCH_OFF = {
+  command: [
+    0x71,
+    0x24,
+    0x0f
+  ]
+};
+
+exports.SET_RGB = {
+  command (red, green, blue, persist = true) {
+    return [persist ? 0x31 : 0x41].concat(red, green, blue, 0x00, 0xf0, 0x0f);
+  }
+};

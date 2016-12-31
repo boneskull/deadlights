@@ -81,10 +81,12 @@ describe('network', function () {
               port: DISCOVERY_PORT
             }));
           network = new Network();
-          network.once('discovering', sock => {
+          network.once('discovering', () => {
             const msg = '10.0.0.18,ACCF236726C6,HF-LPB100-ZJ200';
-            sock.input.write({
-              ip: {src: '1.1.1.1'},
+            network.sock.input.write({
+              ip: {
+                src: '1.1.1.1'
+              },
               udp: {
                 srcPort: 52,
                 dataLength: msg.length

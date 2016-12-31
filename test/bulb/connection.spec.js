@@ -41,12 +41,6 @@ describe('bulb', function () {
           .to
           .include(props);
       });
-
-      it('should call Bulb#createSocket()', function () {
-        sandbox.stub(BulbConnection.prototype, 'createSocket');
-        const conn = new BulbConnection();
-        expect(conn.createSocket).to.have.been.calledOnce;
-      });
     });
 
     describe('method', function () {

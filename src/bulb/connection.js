@@ -12,21 +12,42 @@ class BulbConnection extends EventEmitter {
   constructor ({ip} = {}) {
     super();
     this.ip = ip;
-    this.createSocket();
   }
 
   static finalizeCommand (command) {
     return command.concat(_.sum(command) & 0xff);
   }
 
-  queryState () {
-    const message = messages.QUERY_STATE;
+  close () {
     return new Promise(resolve => {
+      if (this.sock && this.sock.localPort) {
+        this.sock.end();
+      }
+      resolve(this);
+    });
+  }
+
+  connect () {
+    if (!this.sock) {
+      this.createSocket();
+    }
+    return new Promise(resolve => {
+      if (this.sock.localPort) {
+        resolve();
+        return;
+      }
       this.sock.connect({
         port: BULB_PORT,
         host: this.ip
       }, resolve);
-    })
+    });
+  }
+
+  doCommand (message) {
+    if (typeof message === 'string') {
+      message = messages[message];
+    }
+    return this.connect()
       .then(() => this.sendRequest(message));
   }
 
@@ -43,7 +64,7 @@ class BulbConnection extends EventEmitter {
     return this;
   }
 
-  sendRequest (message) {
+  sendRequest (message, ...args) {
     return new Promise((resolve, reject) => {
       // we can do better than "isObject()"
       if (!_.isObject(message)) {
@@ -51,21 +72,34 @@ class BulbConnection extends EventEmitter {
           new Error('message must be an array of unsigned 8-bit integers'));
         return;
       }
+      const command = _.isFunction(message.command)
+        ? message.command(args)
+        : message.command;
+
+      const data = Buffer.from(BulbConnection.finalizeCommand(command));
+
       // TODO unsure about error handling here
-      let chunks = [];
-      const command = BulbConnection.finalizeCommand(message.command);
-      const data = Buffer.from(command);
-      const onData = data => {
-        chunks = chunks.concat(Array.from(data));
-        if (chunks.length === RESPONSE_LENGTH) {
-          this.sock.removeListener('data', onData);
-          resolve(Buffer.from(chunks));
-        }
-      };
-      this.sock.on('data', onData);
-      this.sock.write(data);
+      if (message.parser) {
+        let chunks = [];
+        const onData = data => {
+          chunks = chunks.concat(Array.from(data));
+          if (chunks.length === RESPONSE_LENGTH) {
+            this.sock.removeListener('data', onData);
+            resolve({data: Buffer.from(chunks)});
+          }
+        };
+        this.sock.on('data', onData);
+        this.sock.write(data);
+        return;
+      }
+
+      this.sock.write(data, resolve);
     })
-      .then(data => message.parser.parse(data));
+      .then(({data} = {}) => {
+        if (data) {
+          return message.parser.parse(data);
+        }
+      });
   }
 }
 

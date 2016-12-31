@@ -46,13 +46,43 @@ class Bulb extends EventEmitter {
     return this.state.speed;
   }
 
-  refresh () {
-    return this.conn.queryState()
-      .then(bulbState => {
-        this.emit('state', bulbState);
+  switchOn (force = false) {
+    if (this.state.isOn && !force) {
+      return Promise.resolve(this);
+    }
+    return this.connection.doCommand('SWITCH_ON')
+      .then(() => {
+        this.emit('state', this.state.update({isOn: true}));
         return this;
       });
   }
+
+  switchOff (force = false) {
+    if (!this.state.isOn && !force) {
+      return Promise.resolve(this);
+    }
+    return this.connection.doCommand('SWITCH_OFF')
+      .then(bulbState => {
+        this.emit('state', this.state.update({isOn: false}));
+        return this;
+      });
+  }
+  
+  refresh () {
+    return this.connection.doCommand('QUERY_STATE')
+      .then(bulbState => {
+        if (!_.isEqual(bulbState, this.state)) {
+          this.emit('state', bulbState);
+        }
+        return this;
+      });
+  }
+
+  forget () {
+    return this.connection.close();
+  }
+
+
 }
 
 exports.Bulb = Bulb;

@@ -1,11 +1,9 @@
 /* eslint-env mocha */
 /* global expect */
 
-'use strict';
-
-const {Bulb} = require('../../src/bulb');
-const {BulbConnection} = require('../../src/bulb/connection');
-const sinon = require('sinon');
+import {Bulb} from '../../src/bulb';
+import {BulbConnection} from '../../src/bulb/connection';
+import sinon from 'sinon';
 
 describe('bulb', function () {
   let sandbox;

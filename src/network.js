@@ -1,17 +1,17 @@
 'use strict';
 
-const dgram = require('dgram');
-const os = require('os');
-const _ = require('lodash');
-const {EventEmitter} = require('events');
-const {Netmask} = require('netmask');
-const {Bulb} = require('./bulb');
-const Promise = require('bluebird');
+import dgram from 'dgram';
+import os from 'os';
+import _ from 'lodash';
+import {EventEmitter} from 'events';
+import {Netmask} from 'netmask';
+import {Bulb} from './bulb';
+import Promise from 'bluebird';
 
-const DISCOVERY_PORT = 48899;
-const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
+export const DISCOVERY_PORT = 48899;
+export const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
 
-class Network extends EventEmitter {
+export class Network extends EventEmitter {
   constructor (options = {}) {
     super();
 
@@ -34,10 +34,8 @@ class Network extends EventEmitter {
     if (Network.interfaceInfo && !force) {
       return Network.interfaceInfo;
     }
-    const networkInterface = _(os.networkInterfaces())
-      .values()
-      .flatten()
-      .find({
+    const networkInterface = _.find(_.flatten(_.values(os.networkInterfaces())),
+      {
         internal: false,
         family: 'IPv4'
       });
@@ -131,25 +129,4 @@ class Network extends EventEmitter {
         }
       });
   }
-}
-
-exports.Network = Network;
-exports.DISCOVERY_MESSAGE = DISCOVERY_MESSAGE;
-exports.DISCOVERY_PORT = DISCOVERY_PORT;
-
-if (require.main === module) {
-  const n = new Network();
-  n.discover()
-    .then(bulbs => _.find(bulbs, {id: 'ACCF236726C6'})
-      .refresh())
-    .then(bulb => {
-      if (bulb.isOn) {
-        return bulb.switchOff();
-      } else {
-        return bulb.switchOn();
-      }
-    })
-    .then(bulb => {
-      return bulb.forget();
-    });
 }

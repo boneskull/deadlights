@@ -1,13 +1,10 @@
 'use strict';
 
-module.exports = function wallabyConfig () {
+module.exports = function wallabyConfig (wallaby) {
   return {
     files: [
       'src/**/*.js',
-      {
-        pattern: 'test/fixture.js',
-        instrument: false
-      }
+      'test/fixture.js'
     ],
     tests: [
       'test/**/*.spec.js'
@@ -17,9 +14,12 @@ module.exports = function wallabyConfig () {
       runner: 'node'
     },
     testFramework: 'mocha',
+    compilers: {
+      '**/*.js': wallaby.compilers.babel()
+    },
     bootstrap: function bootstrap (wallaby) {
       const path = require('path');
-      require(path.join(wallaby.localProjectDir, 'test', 'fixture'));
+      require(path.join(wallaby.projectCacheDir, 'test', 'fixture'));
     }
   };
 };

@@ -1,9 +1,11 @@
-'use strict';
+import chai from 'chai';
+import sinonChai from 'sinon-chai';
+import chaiEventEmitter from 'chai-eventemitter';
+import chaiAsPromised from 'chai-as-promised';
 
-global.expect = require('chai')
-  .use(require('sinon-chai'))
-  .use(require('chai-eventemitter'))
-  .use(require('chai-as-promised')).expect;
+global.expect = chai.use(sinonChai)
+  .use(chaiEventEmitter)
+  .use(chaiAsPromised).expect;
 
 const MockDgram = require('mock-dgram');
 

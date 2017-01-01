@@ -1,14 +1,12 @@
 /* eslint-env mocha */
 /* global expect */
 
-'use strict';
-const Promise = require('bluebird');
-const messages = require('../../src/messages');
-const {BulbConnection, BULB_PORT} = require('../../src/bulb/connection');
-const {BulbState} = require('../../src/bulb/state');
-const sinon = require('sinon');
-const Mitm = require('mitm');
-const {Socket} = require('net');
+import Promise from 'bluebird';
+import {BulbConnection, BULB_PORT} from '../../src/bulb/connection';
+import {BulbState} from '../../src/bulb/state';
+import sinon from 'sinon';
+import Mitm from 'mitm';
+import {Socket} from 'net';
 
 describe('bulb', function () {
   let sandbox;
@@ -103,6 +101,7 @@ describe('bulb', function () {
 
           describe('"timeout"', function () {
             beforeEach(function () {
+              conn.createSocket();
               sandbox.stub(conn.sock, 'destroy');
               sandbox.stub(conn, 'createSocket');
               conn.sock.emit('timeout');
@@ -119,11 +118,12 @@ describe('bulb', function () {
         });
       });
 
-      describe('queryState()', function () {
+      describe('doCommand()', function () {
         let bulbState;
 
         beforeEach(function () {
           bulbState = new BulbState();
+          conn.createSocket();
           sandbox.stub(conn, 'sendRequest')
             .returns(Promise.resolve(bulbState));
           sandbox.stub(conn.sock, 'connect')
@@ -131,7 +131,7 @@ describe('bulb', function () {
         });
 
         it('should connect to the BulbConnection on BULB_PORT', function () {
-          return conn.queryState()
+          return conn.doCommand({})
             .then(() => {
               expect(conn.sock.connect)
                 .to
@@ -144,19 +144,26 @@ describe('bulb', function () {
             });
         });
 
-        it('should send a "QUERY_STATE" message to the BulbConnection', function () {
-          return conn.queryState()
-            .then(() => {
-              expect(conn.sendRequest)
-                .to
-                .have
-                .been
-                .calledWithExactly(messages.QUERY_STATE);
-            });
+        describe('when called with a message', function () {
+          it('should send the message to the BulbConnection', function () {
+            const msg = {};
+            return conn.doCommand({})
+              .then(() => {
+                expect(conn.sendRequest)
+                  .to
+                  .have
+                  .been
+                  .calledWithExactly(msg);
+              });
+          });
         });
 
         it('should fulfill with the bulb state', function () {
-          return expect(conn.queryState())
+          return expect(conn.doCommand({
+            parser: {
+              parse: sandbox.spy(() => bulbState)
+            }
+          }))
             .to
             .eventually
             .equal(bulbState);
@@ -200,6 +207,7 @@ describe('bulb', function () {
             0x9d
           ]);
           sandbox.spy(BulbConnection, 'finalizeCommand');
+          conn.createSocket();
           sandbox.stub(conn.sock, 'write', () => {
             process.nextTick(() => {
               // each response is 14 bytes

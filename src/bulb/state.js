@@ -1,17 +1,17 @@
 'use strict';
 
-const colorNamer = require('color-namer');
-const rgbHex = require('rgb-hex');
-const _ = require('lodash');
+import colorNamer from 'color-namer';
+import rgbHex from 'rgb-hex';
+import _ from 'lodash';
 
 // this is roughly 2700K
-const WARM_WHITE_RGB = [
+export const WARM_WHITE_RGB = [
   255,
   166,
   87
 ];
 
-class BulbState {
+export class BulbState {
   constructor () {
     Object.defineProperties(this, {
       cachedColor: {
@@ -60,6 +60,3 @@ class BulbState {
     return new BulbState(_.defaults(newState, this));
   }
 }
-
-exports.BulbState = BulbState;
-exports.WARM_WHITE = WARM_WHITE_RGB;

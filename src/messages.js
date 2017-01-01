@@ -1,11 +1,7 @@
-'use strict';
-const {Parser} = require('binary-parser');
-const {BulbState} = require('./bulb/state');
+import {Parser} from 'binary-parser';
+import {BulbState} from './bulb/state';
 
-require('bluebird')
-  .longStackTraces();
-
-exports.QUERY_STATE = {
+export const QUERY_STATE = {
   command: [
     0x81,
     0x8a,
@@ -49,7 +45,7 @@ exports.QUERY_STATE = {
     .uint8('white')
 };
 
-exports.SWITCH_ON = {
+export const SWITCH_ON = {
   command: [
     0x71,
     0x23,
@@ -57,7 +53,7 @@ exports.SWITCH_ON = {
   ]
 };
 
-exports.SWITCH_OFF = {
+export const SWITCH_OFF = {
   command: [
     0x71,
     0x24,
@@ -65,7 +61,7 @@ exports.SWITCH_OFF = {
   ]
 };
 
-exports.SET_RGB = {
+export const SET_RGB = {
   command (red, green, blue, persist = true) {
     return [persist ? 0x31 : 0x41].concat(red, green, blue, 0x00, 0xf0, 0x0f);
   }

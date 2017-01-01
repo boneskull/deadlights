@@ -1,10 +1,11 @@
 /* eslint-env mocha */
 /* global expect */
 
-const {Network, DISCOVERY_PORT} = require('../src/network');
-const sinon = require('sinon');
-const MockDgram = require('mock-dgram');
-const dgram = require('dgram');
+import {Network, DISCOVERY_PORT} from '../src/network';
+import sinon from 'sinon';
+import MockDgram from 'mock-dgram';
+import dgram from 'dgram';
+
 const DISCOVERY_TIMEOUT = 0;
 
 describe('network', function () {
@@ -45,12 +46,6 @@ describe('network', function () {
             .to
             .equal(obj);
         });
-
-      it('should call Network#createSocket()', function () {
-        sandbox.stub(Network.prototype, 'createSocket');
-        const network = new Network();
-        expect(network.createSocket).to.have.been.calledOnce;
-      });
     });
 
     describe('when internal socket emits an error', function () {
@@ -61,6 +56,7 @@ describe('network', function () {
       });
 
       it('should re-emit the error', function () {
+        network.createSocket();
         expect(() => network.sock.emit('error', new Error()))
           .to
           .emitFrom(network, 'error');

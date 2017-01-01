@@ -1,14 +1,15 @@
 'use strict';
 
-const messages = require('../messages');
-const {EventEmitter} = require('events');
-const BULB_PORT = 5577;
-const RESPONSE_LENGTH = 14;
-const Promise = require('bluebird');
-const _ = require('lodash');
-const {Socket} = require('net');
+import * as messages from '../messages';
+import {EventEmitter} from 'events';
+import Promise from 'bluebird';
+import _ from 'lodash';
+import {Socket} from 'net';
 
-class BulbConnection extends EventEmitter {
+export const BULB_PORT = 5577;
+export const RESPONSE_LENGTH = 14;
+
+export class BulbConnection extends EventEmitter {
   constructor ({ip} = {}) {
     super();
     this.ip = ip;
@@ -102,6 +103,3 @@ class BulbConnection extends EventEmitter {
       });
   }
 }
-
-exports.BulbConnection = BulbConnection;
-exports.BULB_PORT = BULB_PORT;

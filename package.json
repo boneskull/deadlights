@@ -1,15 +1,36 @@
 {
   "name": "deadlights",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Interface for Flux WiFi RGB light bulbs",
-  "main": "index.js",
+  "main": "dist/deadlights.cjs.js",
   "scripts": {
-    "test": "semistandard && mocha --require test/fixture 'test/**/*.spec.js'"
+    "test": "semistandard && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'"
   },
-  "keywords": [],
+  "keywords": [
+    "flux",
+    "wifi",
+    "magic home",
+    "fluxsmartlighting",
+    "fluxwifi",
+    "iot",
+    "rgb",
+    "smart home",
+    "lightbulb",
+    "light",
+    "led",
+    "bulb"
+  ],
+  "files": [
+    "dist",
+    "src"
+  ],
   "author": "Christopher Hiller <boneskull@boneskull.com> (https://boneskull.com/)",
   "license": "MIT",
   "devDependencies": {
+    "babel-loader": "^6.2.10",
+    "babel-plugin-lodash": "^3.2.11",
+    "babel-preset-latest": "^6.16.0",
+    "babel-register": "^6.18.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
@@ -18,7 +39,10 @@
     "mock-dgram": "^0.1.2",
     "semistandard": "^9.2.1",
     "sinon": "^1.17.6",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "wallaby-webpack": "0.0.27",
+    "webpack": "^2.2.0-rc.3",
+    "webpack-node-externals": "^1.5.4"
   },
   "dependencies": {
     "binary-parser": "^1.1.5",
@@ -26,6 +50,7 @@
     "color-namer": "^1.1.0",
     "lodash": "^4.17.3",
     "netmask": "^1.0.6",
-    "rgb-hex": "^2.1.0"
+    "rgb-hex": "^2.1.0",
+    "source-map-support": "^0.4.8"
   }
 }

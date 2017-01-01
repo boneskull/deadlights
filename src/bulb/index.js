@@ -1,12 +1,9 @@
-'use strict';
+import {EventEmitter} from 'events';
+import _ from 'lodash';
+import {BulbConnection} from './connection';
+import Promise from 'bluebird';
 
-const {EventEmitter} = require('events');
-const _ = require('lodash');
-const {BulbConnection} = require('./connection');
-const Promise = require('bluebird');
-Promise.longStackTraces();
-
-class Bulb extends EventEmitter {
+export class Bulb extends EventEmitter {
   constructor ({ip, id, model} = {}) {
     super();
 
@@ -67,7 +64,7 @@ class Bulb extends EventEmitter {
         return this;
       });
   }
-  
+
   refresh () {
     return this.connection.doCommand('QUERY_STATE')
       .then(bulbState => {
@@ -81,8 +78,4 @@ class Bulb extends EventEmitter {
   forget () {
     return this.connection.close();
   }
-
-
 }
-
-exports.Bulb = Bulb;

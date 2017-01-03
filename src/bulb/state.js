@@ -1,5 +1,3 @@
-'use strict';
-
 import colorNamer from 'color-namer';
 import rgbHex from 'rgb-hex';
 import _ from 'lodash';

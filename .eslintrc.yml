@@ -1,0 +1,13 @@
+extends: semistandard
+
+env:
+  node: true
+
+parserOptions:
+  sourceType: script
+  ecmaVersion: 2015
+
+rules:
+  strict:
+    - error
+    - safe

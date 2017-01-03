@@ -4,7 +4,8 @@
   "description": "Interface for Flux WiFi RGB light bulbs",
   "main": "dist/deadlights.cjs.js",
   "scripts": {
-    "test": "semistandard && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'"
+    "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js'",
+    "test": "npm run lint && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
   },
   "keywords": [
     "flux",
@@ -34,10 +35,14 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
+    "eslint": "^3.12.2",
+    "eslint-config-semistandard": "^7.0.0",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^2.0.1",
     "mitm": "^1.3.2",
     "mocha": "^3.2.0",
     "mock-dgram": "^0.1.2",
-    "semistandard": "^9.2.1",
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0",
     "wallaby-webpack": "0.0.27",

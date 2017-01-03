@@ -1,5 +1,3 @@
-'use strict';
-
 import dgram from 'dgram';
 import os from 'os';
 import _ from 'lodash';

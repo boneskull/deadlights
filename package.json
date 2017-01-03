@@ -1,6 +1,6 @@
 {
   "name": "deadlights",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Interface for Flux WiFi RGB light bulbs",
   "main": "dist/deadlights.cjs.js",
   "scripts": {

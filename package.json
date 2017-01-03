@@ -7,7 +7,6 @@
     "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js'",
     "test": "npm run lint && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
     "prepublishOnly": "webpack",
-    "prepare": "webpack -d",
     "preversion": "npm test"
   },
   "keywords": [

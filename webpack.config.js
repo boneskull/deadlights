@@ -12,7 +12,11 @@ module.exports = {
     filename: 'deadlights.cjs.js',
     libraryTarget: 'commonjs2'
   },
-  externals: [nodeExternals()],
+  externals: [
+    nodeExternals({
+      whitelist: 'rgb-hex'
+    })
+  ],
   plugins: [
     new webpack.BannerPlugin({
       banner: "require('source-map-support').install();",
@@ -33,7 +37,6 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
         loader: 'babel-loader'
       }
     ]

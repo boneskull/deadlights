@@ -6,6 +6,8 @@
   "scripts": {
     "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js'",
     "test": "npm run lint && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
+    "prepublishOnly": "webpack",
+    "prepare": "webpack -d"
   },
   "keywords": [
     "flux",
@@ -57,5 +59,8 @@
     "netmask": "^1.0.6",
     "rgb-hex": "^2.1.0",
     "source-map-support": "^0.4.8"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   }
 }

@@ -4,7 +4,7 @@ import {BulbConnection} from './connection';
 import Promise from 'bluebird';
 
 export class Bulb extends EventEmitter {
-  constructor ({ip, id, model} = {}) {
+  constructor ({ip, id, model, maxHistory = 10} = {}) {
     super();
 
     this.ip = ip;
@@ -16,6 +16,9 @@ export class Bulb extends EventEmitter {
 
     this.on('state', bulbState => {
       this.history.push(bulbState);
+      if (this.history.length > maxHistory) {
+        this.history.shift();
+      }
     });
   }
 

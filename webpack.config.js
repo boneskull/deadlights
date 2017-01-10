@@ -22,6 +22,10 @@ module.exports = {
       banner: "require('source-map-support').install();",
       raw: true,
       entryOnly: false
+    }),
+    new webpack.SourceMapDevToolPlugin({
+      moduleFilenameTemplate: '[absolute-resource-path]',
+      fallbackModuleFilenameTemplate: '[absolute-resource-path]'
     })
   ],
   node: {

@@ -1,6 +1,3 @@
-/* eslint-env mocha */
-/* global expect */
-
 import {Bulb} from '../../src/bulb';
 import {BulbConnection} from '../../src/bulb/connection';
 import sinon from 'sinon';

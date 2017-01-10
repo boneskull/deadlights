@@ -1,6 +1,3 @@
-/* eslint-env mocha */
-/* global expect */
-
 import Promise from 'bluebird';
 import {BulbConnection, BULB_PORT} from '../../src/bulb/connection';
 import {BulbState} from '../../src/bulb/state';

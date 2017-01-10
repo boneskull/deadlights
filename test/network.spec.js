@@ -1,6 +1,3 @@
-/* eslint-env mocha */
-/* global expect */
-
 import {Network, DISCOVERY_PORT} from '../src/network';
 import sinon from 'sinon';
 import MockDgram from 'mock-dgram';

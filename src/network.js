@@ -18,7 +18,6 @@ export class Network extends EventEmitter {
     super();
     _.defaults(options, {keepOpen: false});
 
-    this.interfaceInfo = Network.getInterfaceInfo();
     this.cache = new NodeCache({
       stdTTL: STALE_BULB_TTL,
       checkperiod: STALE_BULB_CHECK_PERIOD
@@ -29,6 +28,8 @@ export class Network extends EventEmitter {
       .on('expired', (id, bulb) => {
         this.emit('bulb-expired', bulb);
       });
+
+    this.interfaceInfo = Network.getInterfaceInfo(options);
     this.keepOpen = Boolean(options.keepOpen);
     this.bulbs = new Map();
   }
@@ -43,21 +44,40 @@ export class Network extends EventEmitter {
     });
   }
 
-  static getInterfaceInfo (force = false) {
-    if (Network.interfaceInfo && !force) {
-      return Network.interfaceInfo;
+  static getInterfaceInfo ({
+    force = false, interfaceName = '__default', broadcastAddress, netmask, ipAddress
+  } = {}) {
+    if (Network.interfaceInfo.has(interfaceName) && !force) {
+      return Network.interfaceInfo.get(interfaceName);
     }
-    const networkInterface = _.find(_.flatten(_.values(os.networkInterfaces())),
-      {
+    let networkInterface;
+    const isDefaultName = interfaceName === '__default';
+    if (ipAddress && netmask) {
+      networkInterface = {
+        ipAddress,
+        netmask
+      };
+    } else {
+      const externalInterfaces = isDefaultName ? _.values(
+          os.networkInterfaces()) : os.networkInterfaces()[interfaceName];
+      networkInterface = _.find(_.flatten(externalInterfaces), {
         internal: false,
         family: 'IPv4'
       });
-    const block = new Netmask(`${networkInterface.address}/${networkInterface.netmask}`);
-    Network.interfaceInfo = {
-      ipAddress: networkInterface.address,
-      broadcastAddress: block.broadcast
-    };
-    return Network.interfaceInfo;
+    }
+    if (networkInterface) {
+      const block = broadcastAddress
+        ? {broadcast: broadcastAddress}
+        : new Netmask(`${networkInterface.address}/${networkInterface.netmask}`);
+      Network.interfaceInfo.set(interfaceName, {
+        ipAddress: networkInterface.address,
+        broadcastAddress: block.broadcast
+      });
+      return Network.interfaceInfo.get(interfaceName);
+    } else if (!isDefaultName) {
+      return Network.getInterfaceInfo();
+    }
+    throw new Error('Could not find suitable network interface');
   }
 
   createSocket () {
@@ -161,3 +181,5 @@ export class Network extends EventEmitter {
       });
   }
 }
+
+Network.interfaceInfo = new Map();

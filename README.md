@@ -1,10 +1,12 @@
 # deadlights
 
+[![Build Status](https://travis-ci.org/boneskull/deadlights.svg?branch=master)](https://travis-ci.org/boneskull/deadlights) [![Dependency Status](https://dependencyci.com/github/boneskull/deadlights/badge)](https://dependencyci.com/github/boneskull/deadlights)
+
 > Interface for [Flux](https://www.fluxsmartlighting.com) (aka "Magic Home") WiFi RGB light bulbs
 
 This wouldn't be possible without the Python [flux_led](https://github.com/beville/flux_led) project.
 
-My ultimate goal here is to create a Node-RED flow for Flux WiFi bulb control. 
+My ultimate goal here is to create a Node-RED flow for Flux WiFi bulb control; see [node-red-contrib-fluxwifi](https://github.com/node-red-contrib-fluxwifi). 
 
 ## Installation
 
@@ -49,4 +51,4 @@ discover()
 
 ## License
 
-:copyright: 2016 [Christopher Hiller](https://github.com/boneskull).  Licensed MIT.
+:copyright: 2017 [Christopher Hiller](https://github.com/boneskull).  Licensed MIT.

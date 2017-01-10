@@ -57,6 +57,7 @@
     "color-namer": "^1.1.0",
     "lodash": "^4.17.3",
     "netmask": "^1.0.6",
+    "node-cache": "^4.1.1",
     "rgb-hex": "^2.1.0",
     "source-map-support": "^0.4.8"
   },

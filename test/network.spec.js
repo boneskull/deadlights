@@ -90,7 +90,7 @@ describe('network', function () {
         });
 
         it('should return an Array', function () {
-          return expect(network.discover(DISCOVERY_TIMEOUT))
+          return expect(network.discover({timeout: DISCOVERY_TIMEOUT}))
             .to
             .eventually
             .be
@@ -98,7 +98,7 @@ describe('network', function () {
         });
 
         it('should return the found bulbs(s)', function () {
-          return expect(network.discover(DISCOVERY_TIMEOUT)
+          return expect(network.discover({timeout: DISCOVERY_TIMEOUT})
             .then(bulbs => bulbs.pop()))
             .to
             .eventually

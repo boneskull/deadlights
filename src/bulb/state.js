@@ -12,9 +12,9 @@ export const WARM_WHITE_RGB = [
 export class BulbState {
   get mode () {
     if (this.rawMode === 'rgbw') {
-      this.mode = this.white ? 'white' : 'color';
+      return this.white ? 'white' : 'color';
     } else {
-      this.mode = this.rawMode;
+      return this.rawMode;
     }
   }
 
@@ -35,5 +35,19 @@ export class BulbState {
     const state = new BulbState();
     _.defaults(state, newState, this);
     return state;
+  }
+
+  toJSON () {
+    return {
+      mode: this.mode,
+      blue: this.blue,
+      green: this.green,
+      red: this.red,
+      color: this.color,
+      colorName: this.colorName,
+      speed: this.speed,
+      white: this.white,
+      isOn: this.isOn
+    };
   }
 }

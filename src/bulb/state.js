@@ -10,51 +10,30 @@ export const WARM_WHITE_RGB = [
 ];
 
 export class BulbState {
-  constructor () {
-    Object.defineProperties(this, {
-      cachedColor: {
-        value: null,
-        writable: true,
-        enumerable: false
-      },
-      cachedColorName: {
-        value: null,
-        writable: true,
-        enumerable: false
-      }
-    });
-  }
-
   get mode () {
     if (this.rawMode === 'rgbw') {
-      return this.white ? 'white' : 'color';
+      this.mode = this.white ? 'white' : 'color';
+    } else {
+      this.mode = this.rawMode;
     }
-    return this.rawMode;
   }
 
   get color () {
-    if (this.cachedColor) {
-      return this.cachedColor;
-    }
-    this.cachedColor =
-      this.white ? rgbHex.apply(null, WARM_WHITE_RGB) : rgbHex(this.red, this.green,
-          this.blue);
-    return this.cachedColor;
+    return this.white ? rgbHex.apply(null, WARM_WHITE_RGB) : rgbHex(this.red,
+        this.green, this.blue);
   }
 
   get colorName () {
-    if (this.cachedColorName) {
-      return this.cachedColorName;
-    }
-    this.cachedColorName = this.white
+    return this.white
       ? `Warm White (${Math.round(this.white / 255 * 100)}%)`
       : colorNamer(this.color)
         .ntc
         .shift().name;
-    return this.cachedColorName;
   }
 
   update (newState = {}) {
-    return new BulbState(_.defaults(newState, this));
+    const state = new BulbState();
+    _.defaults(state, newState, this);
+    return state;
   }
 }

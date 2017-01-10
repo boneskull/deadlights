@@ -57,6 +57,24 @@ export class Bulb extends EventEmitter {
       });
   }
 
+  flash (count = 20, duration = 250) {
+    return this.switchOn()
+      .then(() => _.range(count))
+      .each(idx => {
+        if (idx % 2 === 0) {
+          return this.switchOff()
+            .delay(duration);
+        } else {
+          return this.switchOn()
+            .delay(duration);
+        }
+      });
+  }
+
+  toJSON () {
+    return _.pick(this, 'state', 'id', 'ip', 'model');
+  }
+
   switchOff (force = false) {
     if (!this.state.isOn && !force) {
       return Promise.resolve(this);

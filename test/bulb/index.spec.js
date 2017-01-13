@@ -18,7 +18,6 @@ describe('bulb', function () {
       it('should create a BulbConnection on prop "connection"', function () {
         const ip = '99.99.99.99';
 
-        /* eslint no-new: off */
         expect(new Bulb({ip}).connection).to.be.an.instanceof(BulbConnection);
       });
 

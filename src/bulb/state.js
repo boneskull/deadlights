@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import colorNamer from 'color-namer';
 import rgbHex from 'rgb-hex';
-import _ from 'lodash';
+import _ from 'lodash/fp';
 
 // this is roughly 2700K
 export const WARM_WHITE_RGB = [
@@ -34,8 +34,8 @@ export class BulbState {
 
   update (newState = {}) {
     const state = new BulbState();
-    _.defaults(state, newState, this);
-    return state;
+    newState = _.defaults(this, newState);
+    return _.assign(state, newState);
   }
 
   toJSON () {

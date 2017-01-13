@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import * as messages from '../messages';
 import {EventEmitter} from 'events';
 import Promise from 'bluebird';
-import _ from 'lodash';
+import _ from 'lodash/fp';
 import {Socket} from 'net';
 
 export const BULB_PORT = 5577;
@@ -44,7 +44,7 @@ export class BulbConnection extends EventEmitter {
   }
 
   doCommand (message) {
-    if (typeof message === 'string') {
+    if (_.isString(message)) {
       message = messages[message];
     }
     return this.connect()

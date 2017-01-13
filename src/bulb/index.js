@@ -1,6 +1,6 @@
 import 'source-map-support/register';
 import {EventEmitter} from 'events';
-import _ from 'lodash';
+import _ from 'lodash/fp';
 import {BulbConnection} from './connection';
 import Promise from 'bluebird';
 
@@ -73,7 +73,12 @@ export class Bulb extends EventEmitter {
   }
 
   toJSON () {
-    return _.pick(this, 'state', 'id', 'ip', 'model');
+    return _.pick([
+      'state',
+      'id',
+      'ip',
+      'model'
+    ], this);
   }
 
   switchOff (force = false) {

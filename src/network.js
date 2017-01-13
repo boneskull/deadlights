@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import dgram from 'dgram';
 import os from 'os';
-import _ from 'lodash';
+import _ from 'lodash/fp';
 import {EventEmitter} from 'events';
 import {Netmask} from 'netmask';
 import {Bulb} from './bulb';
@@ -17,7 +17,7 @@ export const STALE_BULB_CHECK_PERIOD = 60;
 export class Network extends EventEmitter {
   constructor (options = {}) {
     super();
-    _.defaults(options, {keepOpen: false});
+    options = _.defaults({keepOpen: false}, options);
 
     this.cache = new NodeCache({
       stdTTL: STALE_BULB_TTL,
@@ -61,10 +61,10 @@ export class Network extends EventEmitter {
     } else {
       const externalInterfaces = isDefaultName ? _.values(
           os.networkInterfaces()) : os.networkInterfaces()[interfaceName];
-      networkInterface = _.find(_.flatten(externalInterfaces), {
+      networkInterface = _.pipe(_.flatten, _.find({
         internal: false,
         family: 'IPv4'
-      });
+      }))(externalInterfaces);
     }
     if (networkInterface) {
       const block = broadcastAddress
@@ -168,11 +168,11 @@ export class Network extends EventEmitter {
     })
       .then(discoveredBulbs => {
         const allBulbs = Array.from(this.bulbs.values());
-        allBulbs
-          .filter(bulb => !discoveredBulbs.has(bulb.id))
-          .forEach(bulb => {
-            this.cache.set(bulb.id, bulb);
-          });
+        const missingBulbs = _.reject(bulb => discoveredBulbs.has(bulb.id),
+          allBulbs);
+        _.forEach(bulb => {
+          this.cache.set(bulb.id, bulb);
+        }, missingBulbs);
         const bulbs = Array.from(discoveredBulbs.values());
         if (onlyNew) {
           return _.difference(bulbs, oldBulbs);

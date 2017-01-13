@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import chai from 'chai';
 import sinonChai from 'sinon-chai';
 import chaiEventEmitter from 'chai-eventemitter';

@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import * as messages from '../messages';
 import {EventEmitter} from 'events';
 import Promise from 'bluebird';

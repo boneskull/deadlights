@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import {Network} from './network';
 export {Network};
 export {Bulb} from './bulb';

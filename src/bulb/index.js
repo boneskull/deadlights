@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import {EventEmitter} from 'events';
 import _ from 'lodash';
 import {BulbConnection} from './connection';

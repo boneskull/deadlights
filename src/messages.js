@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import {Parser} from 'binary-parser';
 import {BulbState} from './bulb/state';
 

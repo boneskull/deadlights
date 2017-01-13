@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import colorNamer from 'color-namer';
 import rgbHex from 'rgb-hex';
 import _ from 'lodash';

@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import dgram from 'dgram';
 import os from 'os';
 import _ from 'lodash';

@@ -10,6 +10,13 @@ describe('network', function () {
 
   beforeEach(function () {
     sandbox = sinon.sandbox.create();
+    const send = MockDgram.prototype.send;
+    sandbox.stub(MockDgram.prototype, 'send', function (msg, port, addr, done) {
+      return send.call(this, msg, 0, msg.length, port, addr, done);
+    });
+    sandbox.stub(MockDgram.prototype, 'bind', function (port, done) {
+      process.nextTick(done);
+    });
   });
 
   afterEach(function () {

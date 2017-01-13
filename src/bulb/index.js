@@ -3,9 +3,12 @@ import {EventEmitter} from 'events';
 import _ from 'lodash/fp';
 import {BulbConnection} from './connection';
 import Promise from 'bluebird';
+import debug from 'debug';
+
+const d = debug('deadlights:bulb');
 
 export class Bulb extends EventEmitter {
-  constructor ({ip, id, model, maxHistory = 10} = {}) {
+  constructor ({ip, id, model, maxHistory = 10} = {}, onState = _.noop) {
     super();
 
     this.ip = ip;
@@ -16,10 +19,17 @@ export class Bulb extends EventEmitter {
     this.connection = new BulbConnection({ip});
 
     this.on('state', bulbState => {
+      d('new state', bulbState);
       this.history.push(bulbState);
       if (this.history.length > maxHistory) {
         this.history.shift();
       }
+    })
+      .on('state', onState);
+
+    process.nextTick(() => {
+      d('triggering initial update');
+      this.update();
     });
   }
 
@@ -92,12 +102,13 @@ export class Bulb extends EventEmitter {
       });
   }
 
-  refresh () {
+  update () {
     return this.connection.doCommand('QUERY_STATE')
       .then(bulbState => {
         if (!_.isEqual(bulbState, this.state)) {
           this.emit('state', bulbState);
         }
+        d('completed update');
         return this;
       });
   }

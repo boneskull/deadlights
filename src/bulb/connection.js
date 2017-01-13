@@ -4,9 +4,12 @@ import {EventEmitter} from 'events';
 import Promise from 'bluebird';
 import _ from 'lodash/fp';
 import {Socket} from 'net';
+import debug from 'debug';
 
 export const BULB_PORT = 5577;
 export const RESPONSE_LENGTH = 14;
+
+const d = debug('deadlights:bulb:connection');
 
 export class BulbConnection extends EventEmitter {
   constructor ({ip} = {}) {
@@ -40,7 +43,10 @@ export class BulbConnection extends EventEmitter {
         port: BULB_PORT,
         host: this.ip
       }, resolve);
-    });
+    })
+      .tap(() => {
+        d(`connected to ${this.ip}`);
+      });
   }
 
   doCommand (message) {
@@ -77,7 +83,7 @@ export class BulbConnection extends EventEmitter {
         : message.command;
 
       const data = Buffer.from(BulbConnection.finalizeCommand(command));
-
+      d('sending data', data);
       // TODO unsure about error handling here
       if (message.parser) {
         let chunks = [];
@@ -96,9 +102,13 @@ export class BulbConnection extends EventEmitter {
       this.sock.write(data, resolve);
     })
       .then(({data} = {}) => {
+        d('raw response', data);
         if (data) {
           return message.parser.parse(data);
         }
+      })
+      .tap(data => {
+        d('parsed response', data);
       });
   }
 }

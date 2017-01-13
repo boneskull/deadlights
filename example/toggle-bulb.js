@@ -1,3 +1,5 @@
+'use strict';
+
 const {discover} = require('..');
 
 // find all the bulbs on the local network

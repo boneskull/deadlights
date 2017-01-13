@@ -149,6 +149,7 @@ export class Network extends EventEmitter {
         };
         sock.removeAllListeners('message');
         sock.on('message', onMessage);
+        sock.once('error', onError);
         sock.send(DISCOVERY_MESSAGE, DISCOVERY_PORT,
           this.interfaceInfo.broadcastAddress, err => {
             if (err) {
@@ -156,8 +157,6 @@ export class Network extends EventEmitter {
               return;
             }
             this.emit('discovering');
-
-            sock.once('error', onError);
 
             timer = setTimeout(() => {
               sock.removeAllListeners('message');

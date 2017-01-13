@@ -1,5 +1,6 @@
-extends: semistandard
-
+extends:
+  - semistandard
+  - plugin:lodash-fp/recommended
 env:
   node: true
 
@@ -11,3 +12,6 @@ rules:
   strict:
     - error
     - safe
+
+plugins:
+  - lodash-fp

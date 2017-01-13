@@ -1,8 +1,13 @@
 {
   "presets": [
-    "latest"
-  ],
-  "plugins": [
-    "lodash"
+    [
+      "env",
+      {
+        "targets": {
+          "node": 4
+        },
+        "loose": true
+      }
+    ]
   ]
 }

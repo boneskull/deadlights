@@ -18,8 +18,6 @@ $ npm install deadlights
 
 - Node.js, probably 4.x or newer
 
-I'm not sure how feasible browser support is, but I'll look at it! 
-
 ## Usage
 
 **API is not yet fully implemented!**

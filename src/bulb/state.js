@@ -12,7 +12,6 @@ export const WARM_WHITE_RGB = [
 
 export class BulbState {
   get mode () {
-    // XXX: this is wrong
     if (this.rawMode === 'rgbw') {
       return this.white ? 'white' : 'color';
     } else {

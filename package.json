@@ -5,9 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js'",
-    "test": "npm run lint && mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
+    "test": "npm run lint && nyc mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
     "prepublishOnly": "babel -s inline -d dist/ src/",
-    "preversion": "npm test"
+    "preversion": "npm test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [
     "flux",
@@ -48,6 +49,7 @@
     "mitm": "1.3.2",
     "mocha": "3.2.0",
     "mock-dgram": "0.1.2",
+    "nyc": "^10.1.2",
     "sinon": "1.17.6",
     "sinon-chai": "2.8.0"
   },
@@ -56,6 +58,7 @@
     "bluebird": "3.4.7",
     "color-namer": "1.1.0",
     "debug": "2.6.0",
+    "find-external-interface": "^0.2.0",
     "lodash": "4.17.3",
     "netmask": "1.0.6",
     "node-cache": "4.1.1",

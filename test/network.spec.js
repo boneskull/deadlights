@@ -1,4 +1,5 @@
 import {Network, DISCOVERY_PORT} from '../src/network';
+import * as networkInterface from '../src/network-interface';
 import sinon from 'sinon';
 import MockDgram from 'mock-dgram';
 import dgram from 'dgram';
@@ -24,6 +25,14 @@ describe('network', function () {
   });
 
   describe('class Network', function () {
+    let interfaceInfo;
+    beforeEach(function () {
+      interfaceInfo = {
+        broadcastAddress: '10.0.0.255'
+      };
+      sandbox.stub(networkInterface, 'getNetworkInterface')
+        .returns(interfaceInfo);
+    });
     describe('constructor', function () {
       it('should instantiate an object', function () {
         expect(new Network())
@@ -32,18 +41,18 @@ describe('network', function () {
           .an('object');
       });
 
-      it('should call Network.getInterfaceInfo()', function () {
-        sandbox.stub(Network, 'getInterfaceInfo');
+      it('should call getNetworkInterface()', function () {
         /* eslint no-new: off */
         new Network();
-        expect(Network.getInterfaceInfo).to.have.been.calledOnce;
+        expect(networkInterface.getNetworkInterface).to.have.been.calledOnce;
       });
 
       it(
-        'should assign the result of Network.getInterfaceInfo() to property "interfaceInfo"',
+        'should assign the result of getNetworkInterface to property "interfaceInfo"',
         function () {
           const obj = {};
-          sandbox.stub(Network, 'getInterfaceInfo')
+          networkInterface.getNetworkInterface.restore();
+          sandbox.stub(networkInterface, 'getNetworkInterface')
             .returns(obj);
           const network = new Network();
           expect(network.interfaceInfo)
@@ -84,7 +93,7 @@ describe('network', function () {
           network.once('discovering', () => {
             const msg = '10.0.0.18,ACCF236726C6,HF-LPB100-ZJ200';
             network.sock.input.write({
-              ip: {
+              ipAddress: {
                 src: '1.1.1.1'
               },
               udp: {
@@ -112,7 +121,7 @@ describe('network', function () {
             .include({
               id: 'ACCF236726C6',
               model: 'HF-LPB100-ZJ200',
-              ip: '10.0.0.18'
+              ipAddress: '10.0.0.18'
             });
         });
       });

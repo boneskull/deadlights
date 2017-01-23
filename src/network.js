@@ -1,38 +1,44 @@
 import 'source-map-support/register';
 import dgram from 'dgram';
-import os from 'os';
 import _ from 'lodash/fp';
 import {EventEmitter} from 'events';
-import {Netmask} from 'netmask';
 import {Bulb} from './bulb';
 import Promise from 'bluebird';
 import NodeCache from 'node-cache';
+import {getNetworkInterface} from './network-interface';
 
 export const DISCOVERY_PORT = 48899;
 export const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
 // seconds
 export const STALE_BULB_TTL = 300;
+// seconds
 export const STALE_BULB_CHECK_PERIOD = 60;
+/**
+ * @type {{keepOpen: boolean}}
+ */
+export const NETWORK_DEFAULTS = {
+  keepOpen: false
+};
+
+export const CACHE_CHECK_PERIOD = 5000;
 
 export class Network extends EventEmitter {
   constructor (options = {}) {
     super();
-    options = _.defaults({keepOpen: false}, options);
+    options = _.defaults(NETWORK_DEFAULTS, options);
 
     this.cache = new NodeCache({
-      stdTTL: STALE_BULB_TTL,
-      checkperiod: STALE_BULB_CHECK_PERIOD
+      checkperiod: CACHE_CHECK_PERIOD / 1000,
+      useClones: false
     }).on('del', (id, bulb) => {
-      this.bulbs.delete(id);
       this.emit('bulb-removed', bulb);
     })
       .on('expired', (id, bulb) => {
         this.emit('bulb-expired', bulb);
       });
 
-    this.interfaceInfo = Network.getInterfaceInfo(options);
+    this.interfaceInfo = getNetworkInterface(options);
     this.keepOpen = Boolean(options.keepOpen);
-    this.bulbs = new Map();
   }
 
   close () {
@@ -43,42 +49,6 @@ export class Network extends EventEmitter {
       }
       resolve(this);
     });
-  }
-
-  static getInterfaceInfo ({
-    force = false, interfaceName = '__default', broadcastAddress, netmask, ipAddress
-  } = {}) {
-    if (Network.interfaceInfo.has(interfaceName) && !force) {
-      return Network.interfaceInfo.get(interfaceName);
-    }
-    let networkInterface;
-    const isDefaultName = interfaceName === '__default';
-    if (ipAddress && netmask) {
-      networkInterface = {
-        ipAddress,
-        netmask
-      };
-    } else {
-      const externalInterfaces = isDefaultName ? _.values(
-          os.networkInterfaces()) : os.networkInterfaces()[interfaceName];
-      networkInterface = _.pipe(_.flatten, _.find({
-        internal: false,
-        family: 'IPv4'
-      }))(externalInterfaces);
-    }
-    if (networkInterface) {
-      const block = broadcastAddress
-        ? {broadcast: broadcastAddress}
-        : new Netmask(`${networkInterface.address}/${networkInterface.netmask}`);
-      Network.interfaceInfo.set(interfaceName, {
-        ipAddress: networkInterface.address,
-        broadcastAddress: block.broadcast
-      });
-      return Network.interfaceInfo.get(interfaceName);
-    } else if (!isDefaultName) {
-      return Network.getInterfaceInfo();
-    }
-    throw new Error('Could not find suitable network interface');
   }
 
   createSocket () {
@@ -117,23 +87,21 @@ export class Network extends EventEmitter {
 
   discover ({timeout = 2000, onlyNew = true} = {}) {
     const discoveredBulbs = new Map();
-    const oldBulbs = Array.from(this.bulbs.values());
+    const oldBulbs = this.cache.mget(this.cache.keys());
     const onMessage = (msg, rinfo) => {
       // ignore our initial broadcast
       msg = String(msg);
       if (msg !== DISCOVERY_MESSAGE) {
-        const [ip, id, model] = msg.split(',');
-        let bulb;
+        const [ipAddress, id, model] = msg.split(',');
+        let bulb = this.cache.get(id);
         let isNewBulb = false;
-        if (!this.bulbs.has(id)) {
+        if (!bulb) {
           isNewBulb = true;
           bulb = new Bulb({
-            ip,
+            ipAddress,
             id,
             model
           });
-        } else {
-          bulb = this.bulbs.get(id);
         }
         discoveredBulbs.set(id, bulb);
         this.emit('bulb', bulb, isNewBulb);
@@ -167,7 +135,7 @@ export class Network extends EventEmitter {
       });
     })
       .then(discoveredBulbs => {
-        const allBulbs = Array.from(this.bulbs.values());
+        const allBulbs = this.cache.mget(this.cache.keys());
         const missingBulbs = _.reject(bulb => discoveredBulbs.has(bulb.id),
           allBulbs);
         _.forEach(bulb => {

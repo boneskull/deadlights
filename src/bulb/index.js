@@ -8,15 +8,15 @@ import debug from 'debug';
 const d = debug('deadlights:bulb');
 
 export class Bulb extends EventEmitter {
-  constructor ({ip, id, model, maxHistory = 10} = {}, onState = _.noop) {
+  constructor ({ipAddress, id, model, maxHistory = 10} = {}, onState = _.noop) {
     super();
 
-    this.ip = ip;
+    this.ipAddress = ipAddress;
     this.id = id;
     this.model = model;
 
     this.history = [];
-    this.connection = new BulbConnection({ip});
+    this.connection = new BulbConnection({ipAddress});
 
     this.on('state', bulbState => {
       d('new state', bulbState);
@@ -86,7 +86,7 @@ export class Bulb extends EventEmitter {
     return _.pick([
       'state',
       'id',
-      'ip',
+      'ipAddress',
       'model'
     ], this);
   }

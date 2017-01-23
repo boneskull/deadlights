@@ -28,9 +28,9 @@ describe('bulb', function () {
           .an('object');
       });
 
-      it('should retain ip, id, and model properties', function () {
+      it('should retain "ipAddress", "id", and "model" properties', function () {
         const props = {
-          ip: 'foo'
+          ipAddress: 'foo'
         };
         expect(new BulbConnection(props))
           .to
@@ -43,7 +43,7 @@ describe('bulb', function () {
 
       beforeEach(function () {
         conn = new BulbConnection({
-          ip: '99.99.99.99'
+          ipAddress: '99.99.99.99'
         });
       });
 
@@ -136,7 +136,7 @@ describe('bulb', function () {
                 .been
                 .calledWithExactly({
                   port: BULB_PORT,
-                  host: conn.ip
+                  host: conn.ipAddress
                 }, sinon.match.func);
             });
         });

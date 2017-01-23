@@ -12,9 +12,9 @@ export const RESPONSE_LENGTH = 14;
 const d = debug('deadlights:bulb:connection');
 
 export class BulbConnection extends EventEmitter {
-  constructor ({ip} = {}) {
+  constructor ({ipAddress} = {}) {
     super();
-    this.ip = ip;
+    this.ipAddress = ipAddress;
   }
 
   static finalizeCommand (command) {
@@ -41,11 +41,11 @@ export class BulbConnection extends EventEmitter {
       }
       this.sock.connect({
         port: BULB_PORT,
-        host: this.ip
+        host: this.ipAddress
       }, resolve);
     })
       .tap(() => {
-        d(`connected to ${this.ip}`);
+        d(`connected to ${this.ipAddress}`);
       });
   }
 

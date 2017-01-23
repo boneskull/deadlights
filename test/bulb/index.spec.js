@@ -3,9 +3,15 @@ import {BulbConnection} from '../../src/bulb/connection';
 import sinon from 'sinon';
 
 describe('bulb', function () {
+  let ipAddress;
+  let model;
+  let id;
   let sandbox;
 
   beforeEach(function () {
+    model = 'model name';
+    id = 'unique id';
+    ipAddress = '99.99.99.99';
     sandbox = sinon.sandbox.create();
   });
 
@@ -14,11 +20,24 @@ describe('bulb', function () {
   });
 
   describe('class Bulb', function () {
+    let bulb;
+
+    afterEach(function () {
+      return bulb.forget();
+    });
+
     describe('constructor', function () {
       it('should create a BulbConnection on prop "connection"', function () {
-        const ip = '99.99.99.99';
-
-        expect(new Bulb({ip}).connection).to.be.an.instanceof(BulbConnection);
+        bulb = new Bulb({
+          ipAddress,
+          model,
+          id
+        });
+        expect(bulb.connection)
+          .to
+          .be
+          .an
+          .instanceof(BulbConnection);
       });
 
       it.skip('should listen for "state" event', function () {
@@ -27,9 +46,12 @@ describe('bulb', function () {
     });
 
     describe('method', function () {
-      let bulb;
       beforeEach(function () {
-        bulb = new Bulb();
+        bulb = new Bulb({
+          ipAddress,
+          model,
+          id
+        });
       });
       describe('refresh()', function () {
         it.skip('should call BulbConnection#queryState()', function () {
@@ -43,16 +65,14 @@ describe('bulb', function () {
 
       describe('toJSON', function () {
         beforeEach(function () {
-          bulb.ip = '99.99.99.99';
-          bulb.model = 'foo';
-          bulb.id = 'bar';
           bulb.history.push('despair');
         });
 
-        it('should return the state, id, ip, and model props from the bulb',
+        it(
+          'should return the "state", "id", "ip", and "model" props from the bulb',
           function () {
             expect(bulb.toJSON()).to.eql({
-              ip: bulb.ip,
+              ipAddress: bulb.ipAddress,
               model: bulb.model,
               id: bulb.id,
               state: bulb.history.pop()

@@ -33,8 +33,9 @@
   "devDependencies": {
     "babel-cli": "6.18.0",
     "babel-core": "6.21.0",
+    "babel-plugin-source-map-support-for-6": "^0.0.5",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "1.1.8",
-    "babel-preset-latest": "6.16.0",
     "babel-register": "6.18.0",
     "chai": "3.5.0",
     "chai-as-promised": "6.0.0",
@@ -55,6 +56,7 @@
     "sinon-chai": "2.8.0"
   },
   "dependencies": {
+    "babel-runtime": "^6.23.0",
     "binary-parser": "1.1.5",
     "bluebird": "3.4.7",
     "color-namer": "1.1.0",

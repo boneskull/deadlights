@@ -24,7 +24,6 @@ class NetworkInterface extends EventEmitter {
     this.ipAddress = ipAddress;
     this.broadcastAddress = broadcastAddress;
     this.name = name;
-    d(`interface "${name} polling for its own existence`);
     this.checkTimer = setTimeout(() => {
       this.check();
     }, STALE_INTERFACE_CHECK_PERIOD)
@@ -68,11 +67,7 @@ export function getNetworkInterface (options = {}) {
     };
   }
   options = _.defaults({
-    force: false,
-    name: undefined,
-    broadcastAddress: undefined,
-    netmask: undefined,
-    ipAddress: undefined
+    force: false
   }, options);
   const {force} = options;
   let {name, broadcastAddress, netmask, ipAddress} = options;
@@ -85,7 +80,7 @@ export function getNetworkInterface (options = {}) {
   const externalInterfaceName = findExternalInterface({name});
 
   if (externalInterfaceName) {
-    const externalInterface = osNetworkInterfaces[externalInterfaceName];
+    const externalInterface = _.find({internal: false}, osNetworkInterfaces[externalInterfaceName]);
     netmask = externalInterface.netmask;
     ipAddress = externalInterface.address;
     broadcastAddress =
@@ -97,6 +92,7 @@ export function getNetworkInterface (options = {}) {
       name
     });
     networkInterfaces.set(name, networkInterface);
+    d(`found external interface on ${externalInterfaceName}`);
     return networkInterface;
   }
 

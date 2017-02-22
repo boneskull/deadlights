@@ -26,11 +26,6 @@ export class Bulb extends EventEmitter {
       }
     })
       .on('state', onState);
-
-    process.nextTick(() => {
-      d('triggering initial update');
-      this.update();
-    });
   }
 
   get state () {

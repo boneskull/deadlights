@@ -3,7 +3,7 @@ import * as messages from '../messages';
 import {EventEmitter} from 'events';
 import Promise from 'bluebird';
 import _ from 'lodash/fp';
-import {Socket} from 'net';
+import net from 'net';
 import debug from 'debug';
 
 export const BULB_PORT = 5577;
@@ -31,18 +31,15 @@ export class BulbConnection extends EventEmitter {
   }
 
   connect () {
-    if (!this.sock) {
-      this.createSocket();
-    }
     return new Promise(resolve => {
-      if (this.sock.localPort) {
-        resolve();
+      if (!this.sock) {
+        this.sock = net.createConnection({
+          port: BULB_PORT,
+          host: this.ipAddress
+        }, resolve);
         return;
       }
-      this.sock.connect({
-        port: BULB_PORT,
-        host: this.ipAddress
-      }, resolve);
+      resolve();
     })
       .tap(() => {
         d(`connected to ${this.ipAddress}`);
@@ -55,19 +52,6 @@ export class BulbConnection extends EventEmitter {
     }
     return this.connect()
       .then(() => this.sendRequest(message));
-  }
-
-  createSocket () {
-    this.sock = new Socket()
-      .on('error', err => {
-        this.emit('error', err);
-      })
-      .on('timeout', () => {
-        // appropriate?
-        this.sock.destroy();
-        this.createSocket();
-      });
-    return this;
   }
 
   sendRequest (message, ...args) {

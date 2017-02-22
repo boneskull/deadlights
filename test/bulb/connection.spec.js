@@ -1,9 +1,8 @@
 import Promise from 'bluebird';
-import {BulbConnection, BULB_PORT} from '../../src/bulb/connection';
+import {BulbConnection} from '../../src/bulb/connection';
 import {BulbState} from '../../src/bulb/state';
 import sinon from 'sinon';
 import Mitm from 'mitm';
-import {Socket} from 'net';
 
 describe('bulb', function () {
   let sandbox;
@@ -28,14 +27,15 @@ describe('bulb', function () {
           .an('object');
       });
 
-      it('should retain "ipAddress", "id", and "model" properties', function () {
-        const props = {
-          ipAddress: 'foo'
-        };
-        expect(new BulbConnection(props))
-          .to
-          .include(props);
-      });
+      it('should retain "ipAddress", "id", and "model" properties',
+        function () {
+          const props = {
+            ipAddress: 'foo'
+          };
+          expect(new BulbConnection(props))
+            .to
+            .include(props);
+        });
     });
 
     describe('method', function () {
@@ -47,97 +47,24 @@ describe('bulb', function () {
         });
       });
 
-      describe('createSocket()', function () {
-        it('should create a net.Socket property "sock"', function () {
-          expect(conn.createSocket().sock)
-            .to
-            .be
-            .an
-            .instanceof(Socket);
-        });
-
-        it('should return the BulbConnection instance', function () {
-          expect(conn.createSocket())
-            .to
-            .equal(conn);
-        });
-
-        it('should listen for event "error" on the Socket', function () {
-          sandbox.spy(Socket.prototype, 'on');
-          conn.createSocket();
-          expect(conn.sock.on)
-            .to
-            .have
-            .been
-            .calledWith('error', sinon.match.func);
-        });
-
-        it('should listen for event "timeout" on the Socket', function () {
-          sandbox.spy(Socket.prototype, 'on');
-          conn.createSocket();
-          expect(conn.sock.on)
-            .to
-            .have
-            .been
-            .calledWith('timeout', sinon.match.func);
-        });
-
-        describe('Socket event', function () {
-          describe('"error"', function () {
-            beforeEach(function () {
-              conn.createSocket();
-            });
-
-            it('should re-emit on the BulbConnection instance', function () {
-              const err = new Error();
-              expect(() => conn.sock.emit('error', err))
-                .to
-                .emitFrom(conn, 'error', err);
-            });
-          });
-
-          describe('"timeout"', function () {
-            beforeEach(function () {
-              conn.createSocket();
-              sandbox.stub(conn.sock, 'destroy');
-              sandbox.stub(conn, 'createSocket');
-              conn.sock.emit('timeout');
-            });
-
-            it('should destroy the Socket', function () {
-              expect(conn.sock.destroy).to.have.been.calledOnce;
-            });
-
-            it('should call BulbConnection#createSocket again', function () {
-              expect(conn.createSocket).to.have.been.calledOnce;
-            });
-          });
-        });
-      });
-
       describe('doCommand()', function () {
         let bulbState;
 
         beforeEach(function () {
           bulbState = new BulbState();
-          conn.createSocket();
           sandbox.stub(conn, 'sendRequest')
             .returns(Promise.resolve(bulbState));
-          sandbox.stub(conn.sock, 'connect')
-            .callsArgAsync(1);
+          sandbox.stub(conn, 'connect').returns(Promise.resolve());
         });
 
-        it('should connect to the BulbConnection on BULB_PORT', function () {
+        it('should connect to the bulb', function () {
           return conn.doCommand({})
             .then(() => {
-              expect(conn.sock.connect)
+              expect(conn.connect)
                 .to
                 .have
                 .been
-                .calledWithExactly({
-                  port: BULB_PORT,
-                  host: conn.ipAddress
-                }, sinon.match.func);
+                .calledOnce;
             });
         });
 
@@ -158,7 +85,7 @@ describe('bulb', function () {
         it('should fulfill with the bulb state', function () {
           return expect(conn.doCommand({
             parser: {
-              parse: sandbox.spy(() => bulbState)
+              parse: sandbox.stub().returns(bulbState)
             }
           }))
             .to
@@ -204,11 +131,12 @@ describe('bulb', function () {
             0x9d
           ]);
           sandbox.spy(BulbConnection, 'finalizeCommand');
-          conn.createSocket();
-          sandbox.stub(conn.sock, 'write', () => {
-            process.nextTick(() => {
-              // each response is 14 bytes
-              conn.sock.emit('data', data);
+          return conn.connect().then(() => {
+            sandbox.stub(conn.sock, 'write', () => {
+              process.nextTick(() => {
+                // each response is 14 bytes
+                conn.sock.emit('data', data);
+              });
             });
           });
         });
@@ -235,7 +163,8 @@ describe('bulb', function () {
         it('should write the finalized command to the Socket', function () {
           return conn.sendRequest(message)
             .then(() => {
-              const buf = Buffer.from(BulbConnection.finalizeCommand(message.command));
+              const buf = Buffer.from(
+                BulbConnection.finalizeCommand(message.command));
               expect(conn.sock.write)
                 .to
                 .have

@@ -1,10 +1,10 @@
 'use strict';
 
-module.exports = function wallabyConfig (wallaby) {
+module.exports = function (wallaby) {
   return {
     files: [
       'src/**/*.js',
-      'test/fixture.js'
+      'test/harness.js'
     ],
     tests: [
       'test/**/*.spec.js'
@@ -19,7 +19,7 @@ module.exports = function wallabyConfig (wallaby) {
     },
     bootstrap: function bootstrap (wallaby) {
       const path = require('path');
-      require(path.join(wallaby.projectCacheDir, 'test', 'fixture'));
+      require(path.join(wallaby.projectCacheDir, 'test', 'harness'));
     }
   };
 };

@@ -5,9 +5,7 @@ const {discover} = require('..');
 // find all the bulbs on the local network
 discover()
   // grab the first one
-  .then(bulbs => bulbs.pop()
-    // get its state
-    .refresh())
+  .then(bulbs => bulbs.pop())
   .then(bulb => {
     // toggle the bulb on and off
     if (bulb.isOn) {

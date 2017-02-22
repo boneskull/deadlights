@@ -29,9 +29,8 @@ const {discover} = require('deadlights');
 
 // find all the bulbs on the local network
 discover()
-  // grab the first one & get its state
-  .then(bulbs => bulbs.pop()
-    .refresh())
+  // grab the first one
+  .then(bulbs => bulbs.pop())
   .then(bulb => {
     // toggle the bulb on and off
     if (bulb.isOn) {

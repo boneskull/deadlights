@@ -6,6 +6,9 @@ import {Bulb} from './bulb';
 import Promise from 'bluebird';
 import NodeCache from 'node-cache';
 import {getNetworkInterface} from './network-interface';
+import debug from 'debug';
+
+const d = debug('deadlights:network');
 
 export const DISCOVERY_PORT = 48899;
 export const DISCOVERY_MESSAGE = 'HF-A11ASSISTHREAD';
@@ -86,12 +89,14 @@ export class Network extends EventEmitter {
   }
 
   discover ({timeout = 2000, onlyNew = true} = {}) {
+    d('begin discovery');
     const discoveredBulbs = new Map();
-    const oldBulbs = this.cache.mget(this.cache.keys());
+    const oldBulbs = _.values(this.cache.mget(this.cache.keys()));
     const onMessage = (msg, rinfo) => {
       // ignore our initial broadcast
       msg = String(msg);
       if (msg !== DISCOVERY_MESSAGE) {
+        d(`message: %j`, msg);
         const [ipAddress, id, model] = msg.split(',');
         let bulb = this.cache.get(id);
         let isNewBulb = false;
@@ -129,6 +134,7 @@ export class Network extends EventEmitter {
             timer = setTimeout(() => {
               sock.removeAllListeners('message');
               sock.removeListener('error', onError);
+              d(`done discovering after ${timeout}ms`);
               resolve(discoveredBulbs);
             }, timeout);
           });
@@ -146,7 +152,8 @@ export class Network extends EventEmitter {
           return _.difference(bulbs, oldBulbs);
         }
         return bulbs;
-      });
+      })
+      .map(bulb => bulb.update());
   }
 }
 

@@ -1,4 +1,7 @@
-import {Network, DISCOVERY_PORT} from '../src/network';
+import Mitm from 'mitm';
+import {DISCOVERY_PORT, Network} from '../src/network';
+import {BulbConnection} from '../src/bulb/connection';
+import {BulbState} from '../src/bulb/state';
 import * as networkInterface from '../src/network-interface';
 import sinon from 'sinon';
 import MockDgram from 'mock-dgram';
@@ -8,6 +11,7 @@ const DISCOVERY_TIMEOUT = 0;
 
 describe('network', function () {
   let sandbox;
+  let man;
 
   beforeEach(function () {
     sandbox = sinon.sandbox.create();
@@ -18,10 +22,12 @@ describe('network', function () {
     sandbox.stub(MockDgram.prototype, 'bind', function (port, done) {
       process.nextTick(done);
     });
+    man = Mitm();
   });
 
   afterEach(function () {
     sandbox.restore();
+    man.disable();
   });
 
   describe('class Network', function () {
@@ -83,12 +89,14 @@ describe('network', function () {
         network = new Network();
       });
 
-      describe('discover()', function () {
+      describe.only('discover()', function () {
         beforeEach(function () {
           sandbox.stub(dgram, 'createSocket')
             .returns(new MockDgram({
               port: DISCOVERY_PORT
             }));
+          sandbox.stub(BulbConnection.prototype, 'doCommand')
+            .returns(Promise.resolve(new BulbState()));
           network = new Network();
           network.once('discovering', () => {
             const msg = '10.0.0.18,ACCF236726C6,HF-LPB100-ZJ200';

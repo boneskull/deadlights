@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js'",
-    "test": "npm run lint && nyc mocha --require babel-register --require test/fixture 'test/**/*.spec.js'",
-    "prepublishOnly": "babel -s inline -d dist/ src/",
+    "test": "npm run lint && nyc mocha --require babel-register --require test/harness 'test/**/*.spec.js'",
+    "prepublishOnly": "npm run build",
     "preversion": "npm test",
+    "build": "babel -d dist/ src/",
+    "build:watch": "babel -d dist/ -w src/",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [

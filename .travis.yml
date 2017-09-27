@@ -8,4 +8,9 @@ node_js:
 after_script: npm run coverage
 notifications:
   email: false
+cache:
+  directories:
+    - ~/.npm
+    - node_modules
+
 

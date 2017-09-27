@@ -12,6 +12,10 @@
     "build:watch": "babel -d dist/ -w src/",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boneskull/deadlights.git"
+  },
   "keywords": [
     "flux",
     "wifi",

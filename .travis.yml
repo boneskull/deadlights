@@ -1,10 +1,11 @@
 dist: trusty
-sudo: true
 language: node_js
-before_install: npm install -g npm@latest
 node_js:
+- '8'
 - '7'
 - '6'
 - '4'
 after_script: npm run coverage
+notifications:
+  email: false
 

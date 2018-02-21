@@ -67,7 +67,7 @@
     "color-namer": "1.1.0",
     "debug": "2.6.9",
     "find-external-interface": "^0.2.0",
-    "lodash": "4.17.3",
+    "lodash": "4.17.5",
     "netmask": "1.0.6",
     "node-cache": "4.1.1",
     "rgb-hex": "2.1.0",
